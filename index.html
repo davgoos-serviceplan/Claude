@@ -14,11 +14,23 @@
   <meta name="apple-mobile-web-app-title" content="Process & AI" />
   <script>
     // Vor dem ersten Rendern setzen, damit die Seite nicht kurz im falschen
-    // Modus aufblitzt, bevor js/app.js geladen ist.
+    // Modus aufblitzt, bevor js/app.js geladen ist. Ohne gespeicherte
+    // Präferenz richtet sich der Default nach der Tageszeit (hell 5-21 Uhr,
+    // dunkel 22-4 Uhr) - muss zu timeDefaultTheme() in js/app.js passen.
     try {
-      if (localStorage.getItem("ai_ideen_theme") === "light") {
-        document.documentElement.setAttribute("data-theme", "light");
-      }
+      (function () {
+        var storedTheme = localStorage.getItem("ai_ideen_theme");
+        var theme;
+        if (storedTheme === "light" || storedTheme === "dark") {
+          theme = storedTheme;
+        } else {
+          var h = new Date().getHours();
+          theme = h >= 5 && h < 22 ? "light" : "dark";
+        }
+        if (theme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
     } catch (e) {}
   </script>
   <link rel="stylesheet" href="css/style.css" />

@@ -64,10 +64,16 @@ body {
   flex-direction: column;
 }
 
-/* Ab Tablet/Desktop-Breite: mehr Platz nutzen statt schmaler Handy-Spalte. */
+/* Ab Tablet/Desktop-Breite: mehr Platz nutzen statt schmaler Handy-Spalte.
+   Der Rahmen (#app) wird bewusst fluid gehalten (min(1600px, 96vw)) statt
+   auf einen festen Wert gekappt, damit auch sehr breite Laptop-/Desktop-
+   Fenster gut ausgenutzt werden - einzelne Formulare (Login etc.) bleiben
+   bei 680px Lesebreite, Seiten mit .wide-main (Start, Prozesse, Ideen,
+   Auswertungen, Usecase-/Prozess-Detail) nutzen bewusst die volle
+   #app-Breite. */
 @media (min-width: 860px) {
   #app {
-    max-width: 960px;
+    max-width: min(1600px, 96vw);
   }
 
   main {
@@ -82,15 +88,28 @@ body {
     max-width: 680px;
   }
 
-  .idea-list {
-    max-width: 900px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  /* Start/Prozesse/Ideen/Auswertungen: keine eigene (schmalere)
+     Breitenbegrenzung mehr - der Inhalt darf die volle, fluide
+     #app-Breite ausfuellen (siehe oben). */
+  .wide-main > * {
+    max-width: none;
   }
 
-  .idea-list .empty-state {
-    grid-column: 1 / -1;
+  header.topbar.hero {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  .hero-inner {
+    max-width: min(1600px, 96vw);
+    margin: 0 auto;
+  }
+
+  /* Die beiden Ringe (KI-Potenzial, Realisierungsquote) sollen bei viel
+     Platz nicht ueber die ganze Breite auseinandergezogen werden (wirkt
+     "verloren"), sondern eng nebeneinander links stehen bleiben. */
+  .ring-row .ring-wrap {
+    flex: 0 0 auto;
   }
 }
 
@@ -292,6 +311,26 @@ button {
   gap: 10px;
 }
 
+/* Prozesse-/Ideenliste: ab Tablet/Desktop-Breite keine feste
+   2-Spalten-/900px-Begrenzung mehr, sondern so viele Spalten wie bei
+   ~320px Kartenbreite hineinpassen - dadurch nutzt die Liste auf einem
+   breiten .wide-main dieselbe Breite statt in einer schmalen Spalte
+   darin zu haengen. Muss nach der obigen Basis-Regel stehen, sonst
+   verliert sie bei gleicher Spezifitaet gegen die spaeter im Dokument
+   stehende Basis-Regel. */
+@media (min-width: 860px) {
+  .idea-list {
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 12px;
+  }
+
+  .idea-list .empty-state {
+    grid-column: 1 / -1;
+  }
+}
+
 .idea-item {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -491,11 +530,10 @@ button {
 }
 
 .login-lang-toggle {
-  position: absolute;
-  top: calc(env(safe-area-inset-top) + 16px);
-  right: 16px;
   display: flex;
+  justify-content: center;
   gap: 8px;
+  margin-bottom: 22px;
 }
 
 .login-wrap img { width: 88px; height: 88px; border-radius: 20px; margin-bottom: 16px; }
@@ -601,6 +639,35 @@ textarea.field { min-height: 70px; resize: vertical; }
 
 .potential-bar-open {
   height: 100%;
+}
+
+/* Admin-Übersicht "App-Feedback": Durchschnitt je Kategorie als Balken */
+.feedback-avg-row {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.feedback-avg-row:first-child {
+  margin-top: 0;
+}
+
+.feedback-avg-row .potential-bar {
+  margin: 0;
+}
+
+.feedback-avg-label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.feedback-avg-value {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .toast {
@@ -865,6 +932,16 @@ textarea.field { min-height: 70px; resize: vertical; }
   margin: 4px auto 0;
 }
 
+/* Ab Tablet/Desktop-Breite darf die Matrix mit der (jetzt breiteren)
+   Auswertungen-Karte mitwachsen statt bei der mobilen 320px-Groesse zu
+   bleiben - es ist reines Vektor-SVG (viewBox-skaliert), bleibt also
+   auch groesser gestochen scharf. */
+@media (min-width: 860px) {
+  .dash-matrix-svg {
+    max-width: 520px;
+  }
+}
+
 .dash-matrix-bubble {
   cursor: pointer;
 }
@@ -1095,12 +1172,65 @@ header.topbar.hero {
   padding: calc(env(safe-area-inset-top) + 16px) 16px 0;
   overflow: hidden;
   position: relative;
+  /* Voller Breakout aus #app heraus: die Hero-Farbfläche soll immer die
+     gesamte Fensterbreite ausfuellen, unabhaengig davon, wie breit #app
+     selbst gerade begrenzt ist (siehe #app weiter oben). Funktioniert bei
+     jeder Breite, da #app auf der Seite zentriert ist (margin: 0 auto). */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* Der eigentliche Inhalt (Begruessung, Ringe) bleibt trotz Vollbreite der
+   Farbflaeche auf dieselbe Breite begrenzt wie der Rest des Inhalts
+   (#app-Breite, siehe oben) und wird zentriert - sonst wuerden Text und
+   Ringe auf einem breiten Monitor bis an den Bildschirmrand auseinandergezogen. */
+.hero-inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* Himmelfarbe je Tageszeit (siehe dayPart() in js/app.js) - bewusst fest
+   und unabhängig von --accent/--accent-2 (Hell-/Dunkelmodus betrifft nur
+   den Rest der App, nicht diese Uhrzeit-Grafik). */
+header.topbar.hero[data-daypart="morning"] { background: linear-gradient(180deg, #ffcf9e 0%, #ff9a6b 55%, #ff7a59 100%); }
+header.topbar.hero[data-daypart="day"] { background: linear-gradient(180deg, #bfe4ff 0%, #5fb6ee 55%, #1c7ed6 100%); }
+header.topbar.hero[data-daypart="evening"] { background: linear-gradient(180deg, #6c4ab6 0%, #b1548f 45%, #ff8a5b 100%); }
+header.topbar.hero[data-daypart="night"] { background: linear-gradient(180deg, #0b0f2e 0%, #16204f 55%, #2a3b7a 100%); }
+
+.hero-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-sky-bob { animation: hero-sky-bob 6s ease-in-out infinite; }
+.hero-sky-drift { animation: hero-sky-drift 16s ease-in-out infinite; }
+.hero-sky-twinkle { animation: hero-sky-twinkle 3.4s ease-in-out infinite; opacity: 0.35; }
+
+@keyframes hero-sky-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes hero-sky-drift {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(10px); }
+}
+
+@keyframes hero-sky-twinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
 }
 
 header.topbar.hero::before {
   content: "";
   position: absolute;
   inset: -40% -20%;
+  z-index: 2;
   background: linear-gradient(75deg, transparent 40%, rgba(255, 255, 255, 0.14) 48%, rgba(255, 255, 255, 0.14) 52%, transparent 60%);
   animation: hero-sheen 7s ease-in-out infinite;
   pointer-events: none;
@@ -1110,10 +1240,8 @@ header.topbar.hero::before {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .brand-lockup {
@@ -1121,7 +1249,7 @@ header.topbar.hero::before {
   align-items: center;
   gap: 8px;
   min-width: 0;
-  flex: 1 1 auto;
+  width: 100%;
 }
 
 .hoc-chip {
@@ -1152,7 +1280,7 @@ header.topbar.hero::before {
 }
 
 .app-name {
-  font-size: 11.5px;
+  font-size: 14px;
   font-weight: 700;
   opacity: 0.92;
   white-space: nowrap;
@@ -1161,16 +1289,32 @@ header.topbar.hero::before {
   min-width: 0;
 }
 
+.greet-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 10px;
+  width: 100%;
+}
+
 .hero-actions {
   display: flex;
+  align-items: center;
   gap: 6px;
   flex-shrink: 0;
+}
+
+.hero-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .greet-row {
   position: relative;
   z-index: 2;
-  margin-top: 14px;
+  margin-top: 10px;
   opacity: 0;
   animation: hero-fade-slide 0.6s ease 0.05s forwards;
 }
@@ -1184,11 +1328,16 @@ header.topbar.hero::before {
   gap: 8px;
 }
 
-.greet .wave {
+.greet .greet-icon {
   display: inline-block;
-  animation: hero-wave 2.4s ease-in-out 0.7s 2;
-  transform-origin: 70% 70%;
+  animation: hero-icon-flicker 1.8s ease-in-out 0.7s 2;
+  transform-origin: 50% 85%;
 }
+
+.greet-icon.icon-morning { --glow: 255, 178, 102; }
+.greet-icon.icon-day { --glow: 255, 209, 102; }
+.greet-icon.icon-evening { --glow: 255, 122, 89; }
+.greet-icon.icon-night { --glow: 148, 163, 253; }
 
 .hero .sub {
   font-size: 12.5px;
@@ -1200,7 +1349,7 @@ header.topbar.hero::before {
   display: flex;
   align-items: center;
   gap: 18px;
-  margin: 16px 0 26px;
+  margin: 14px 0 20px;
 }
 
 .ring-wrap {
@@ -1286,15 +1435,17 @@ header.topbar.hero::before {
   z-index: 11;
 }
 
-/* Ab Tablet/Desktop-Breite wird der Inhalt in <main> zentriert und auf
-   680px begrenzt (siehe Breite-Regel oben) - Kennzahlen-Reihe liegt aber
-   außerhalb von <main> (wegen des Überlapp-Effekts in den Header hinein)
-   und braucht deshalb dieselbe Begrenzung extra. */
+/* Ab Tablet/Desktop-Breite liegt die Kennzahlen-Reihe außerhalb von <main>
+   (wegen des Überlapp-Effekts in den Header hinein, siehe oben) und braucht
+   deshalb ihre eigenen Seitenabstände - dieselben 28px wie main/hero-inner,
+   damit die drei Kacheln exakt so breit wie der restliche Inhalt sind und
+   sich gleichmäßig links/mittig/rechts über die volle Breite verteilen
+   (keine eigene, schmalere Breitenbegrenzung mehr). */
 @media (min-width: 860px) {
   .stat-row {
-    max-width: 680px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 28px;
+    margin-right: 28px;
   }
 }
 
@@ -1456,12 +1607,12 @@ header.topbar.hero::before {
   to { opacity: 1; transform: none; }
 }
 
-@keyframes hero-wave {
-  0%, 100% { transform: rotate(0deg); }
-  15% { transform: rotate(16deg); }
-  30% { transform: rotate(-8deg); }
-  45% { transform: rotate(14deg); }
-  60% { transform: rotate(0deg); }
+@keyframes hero-icon-flicker {
+  0%, 100% { transform: scale(1); opacity: 0.8; filter: drop-shadow(0 0 0 rgba(var(--glow), 0)); }
+  20% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 3px rgba(var(--glow), 0.5)); }
+  35% { transform: scale(0.98); opacity: 0.85; filter: drop-shadow(0 0 0 rgba(var(--glow), 0)); }
+  50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 3px rgba(var(--glow), 0.5)); }
+  70% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 1.5px rgba(var(--glow), 0.3)); }
 }
 
 @keyframes hero-ring-fill {
@@ -1502,7 +1653,7 @@ header.topbar.hero::before {
   .logo-mark.animated .chev3,
   .logo-mark.animated .spark,
   .stat-tile::after,
-  .greet .wave,
+  .greet .greet-icon,
   .fade-up,
   #start-recent .idea-item {
     animation: none !important;

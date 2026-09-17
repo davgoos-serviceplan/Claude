@@ -310,6 +310,12 @@ Gedächtnisstütze, die mit der Idee gespeichert wird.
   (Anleitung, Teams, Export, für Admins zusätzlich Freigaben, Einstellungen –
   bündelt, was früher als einzelne Icons in jedem Tab-Header stand) sowie die
   zuletzt bearbeiteten Ideen. Zeigt außerdem das Logo des Bereichs.
+- **Lichtstimmung nach Tageszeit**: Der Header des Cockpits zeigt statt eines
+  festen Verlaufs eine von vier Himmelsgrafiken – Sonnenaufgang, Hochstand,
+  Sonnenuntergang, Nachthimmel mit Halbmond und erleuchteten Fenstern –, alle
+  über derselben stilisierten Bürozeile am Horizont. Richtet sich rein nach
+  der Uhrzeit des Geräts (`dayPart()` in `js/app.js`) und ist bewusst
+  unabhängig vom Hell-/Dunkelmodus-Schalter, der nur den Rest der App betrifft.
 - **Schnell erfassen**: Kurznotiz eintippen, speichern – fertig.
 - **Später ausarbeiten**: Beschreibung, Tags, Status pro Idee ergänzen.
 - **Bewerten**: Nutzen / Machbarkeit / Aufwand / Risiko einschätzen, die App

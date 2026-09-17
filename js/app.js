@@ -23,7 +23,16 @@ function t(key) {
 // ============================================================
 
 const THEME_STORAGE = "ai_ideen_theme";
-let currentTheme = localStorage.getItem(THEME_STORAGE) === "light" ? "light" : "dark";
+
+// Ohne gespeicherte Präferenz richtet sich der Default nach der Tageszeit
+// (hell tagsüber, dunkel nachts) - siehe auch greetingText()/greetingIcon().
+function timeDefaultTheme() {
+  const h = new Date().getHours();
+  return h >= 5 && h < 22 ? "light" : "dark";
+}
+
+const storedTheme = localStorage.getItem(THEME_STORAGE);
+let currentTheme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : timeDefaultTheme();
 document.documentElement.setAttribute("data-theme", currentTheme);
 
 // Spiegelt die Akzentfarbe des aktuellen Modus in der Browser-/OS-Oberfläche
@@ -34,11 +43,11 @@ function updateThemeColorMeta() {
 }
 updateThemeColorMeta();
 
-// Das echte App-/Homescreen-Icon bleibt fix (dort nicht per JS umschaltbar,
-// siehe manifest.json/apple-touch-icon) - nur das Logo auf den
-// Login-/Status-Bildschirmen zeigt hier gezielt die passende Akzentfarbe.
+// Ein einziges Icon für Homescreen wie Login-/Status-Bildschirme: das feste
+// Schwarz des Serviceplan-Zeichens (siehe icons/icon.svg) passt unabhängig
+// vom Hell-/Dunkelmodus, ein Hell-/Dunkel-Pendant ist dafür nicht mehr nötig.
 function loginLogoSrc() {
-  return currentTheme === "light" ? "icons/icon-light-192.png" : "icons/icon-192.png";
+  return "icons/icon-192.png";
 }
 
 function setTheme(theme) {
@@ -97,6 +106,7 @@ const I18N = {
     greetingMorning: "Guten Morgen",
     greetingAfternoon: "Guten Tag",
     greetingEvening: "Guten Abend",
+    greetingNight: "Gute Nacht",
     aiPotentialAvgLabel: "Ø KI-Potenzial im Bereich",
     realizedPotentialAvgLabel: "Ø bereits realisiert",
     statOpenIdeasLabel: "Offene Ideen",
@@ -111,6 +121,7 @@ const I18N = {
     utilExportLabel: "Export",
     utilPermissionsLabel: "Freigaben",
     utilSettingsLabel: "Einstellungen",
+    utilFeedbackLabel: "Feedback",
     adminOnlyTag: "Admin",
     brandFooterCaption: "Ein Tool von",
 
@@ -144,7 +155,7 @@ const I18N = {
     guideStartF2Desc:
       "Direkt-Kacheln zu Prozessen, Ideen und Auswertungen, plus „Verwaltung & mehr“ mit Anleitung, Teams, Export und Einstellungen.",
     guideStartF3Name: "Zuletzt bearbeitet",
-    guideStartF3Desc: "Deine drei zuletzt bearbeiteten Ideen, damit du direkt dort weitermachen kannst, wo du aufgehört hast.",
+    guideStartF3Desc: "Deine drei zuletzt bearbeiteten Ideen und Prozesse, damit du direkt dort weitermachen kannst, wo du aufgehört hast.",
     guideProcF1Name: "Prozesse dokumentieren",
     guideProcF1Desc:
       "Wiederkehrende Abläufe eures Bereichs erfassen – z.B. Angebote erstellen, Rechnungsprüfung, Kundenonboarding. Optional, aber hilfreich, um Optimierungspotenzial zu erkennen.",
@@ -604,6 +615,21 @@ const I18N = {
     dashTimelineTitle: "Erfassungsverlauf",
     dashTimelineEmpty: "Noch keine Daten für einen Verlauf.",
 
+    feedbackTitle: "App-Feedback",
+    feedbackDesc: "Wie gefällt dir die App? Bewerte die folgenden Punkte und hinterlass uns gerne zusätzliches Feedback.",
+    feedbackRatingUsability: "Benutzerfreundlichkeit",
+    feedbackRatingDesign: "Design",
+    feedbackRatingFeatures: "Funktionsumfang",
+    feedbackRatingPerformance: "Geschwindigkeit",
+    feedbackCommentLabel: "Freitext (optional)",
+    feedbackCommentPlaceholder: "Was läuft gut, was können wir verbessern?",
+    sendFeedbackBtn: "Feedback senden",
+    feedbackSentMsg: "Danke für dein Feedback!",
+    feedbackAdminTitle: "App-Feedback",
+    feedbackResponseCountMsg: "{n} Rückmeldung(en) insgesamt.",
+    feedbackCommentsTitle: "Freitext-Kommentare",
+    emptyFeedback: "Noch kein Feedback vorhanden.",
+
     loadErrorPrefix: "Fehler beim Laden: ",
     saveErrorPrefix: "Fehler beim Speichern: ",
     deleteErrorPrefix: "Fehler beim Löschen: ",
@@ -658,6 +684,7 @@ const I18N = {
     greetingMorning: "Good morning",
     greetingAfternoon: "Good afternoon",
     greetingEvening: "Good evening",
+    greetingNight: "Good night",
     aiPotentialAvgLabel: "Avg. AI potential in your area",
     realizedPotentialAvgLabel: "Avg. already realized",
     statOpenIdeasLabel: "Open ideas",
@@ -672,6 +699,7 @@ const I18N = {
     utilExportLabel: "Export",
     utilPermissionsLabel: "Access",
     utilSettingsLabel: "Settings",
+    utilFeedbackLabel: "Feedback",
     adminOnlyTag: "Admin",
     brandFooterCaption: "A tool by",
 
@@ -703,7 +731,7 @@ const I18N = {
     guideStartF2Name: "Quick access",
     guideStartF2Desc: "Direct tiles to Processes, Ideas and Analytics, plus „Manage & more” with Guide, Teams, Export and Settings.",
     guideStartF3Name: "Recently edited",
-    guideStartF3Desc: "Your three most recently edited ideas, so you can pick up right where you left off.",
+    guideStartF3Desc: "Your three most recently edited ideas and processes, so you can pick up right where you left off.",
     guideProcF1Name: "Document processes",
     guideProcF1Desc:
       "Capture recurring workflows in your area — e.g. creating quotes, invoice checking, customer onboarding. Optional, but helpful for spotting optimization potential.",
@@ -1161,6 +1189,21 @@ const I18N = {
     dashTimelineTitle: "Collection progress over time",
     dashTimelineEmpty: "No data for a timeline yet.",
 
+    feedbackTitle: "App feedback",
+    feedbackDesc: "How do you like the app? Rate the points below and feel free to leave us additional feedback.",
+    feedbackRatingUsability: "Usability",
+    feedbackRatingDesign: "Design",
+    feedbackRatingFeatures: "Feature set",
+    feedbackRatingPerformance: "Speed",
+    feedbackCommentLabel: "Free text (optional)",
+    feedbackCommentPlaceholder: "What works well, what could we improve?",
+    sendFeedbackBtn: "Send feedback",
+    feedbackSentMsg: "Thanks for your feedback!",
+    feedbackAdminTitle: "App feedback",
+    feedbackResponseCountMsg: "{n} response(s) in total.",
+    feedbackCommentsTitle: "Free-text comments",
+    emptyFeedback: "No feedback yet.",
+
     loadErrorPrefix: "Error loading: ",
     saveErrorPrefix: "Error saving: ",
     deleteErrorPrefix: "Error deleting: ",
@@ -1360,6 +1403,17 @@ function potentialBarHtml(aiPotential, realizedPct) {
   `;
 }
 
+function feedbackAvgRow(label, avg) {
+  const pct = Math.max(0, Math.min(100, (avg / 5) * 100));
+  return `
+    <div class="feedback-avg-row">
+      <div class="feedback-avg-label">${escapeHtml(label)}</div>
+      <div class="potential-bar"><div class="potential-bar-realized" style="width:${pct}%;"></div></div>
+      <div class="feedback-avg-value">${avg.toFixed(1)}/5</div>
+    </div>
+  `;
+}
+
 function langToggleButton() {
   const nextLang = currentLang === "de" ? "en" : "de";
   return `<button class="icon-btn" id="lang-btn" data-next-lang="${nextLang}">${nextLang.toUpperCase()}</button>`;
@@ -1468,6 +1522,7 @@ function currentRoute() {
   if (hash === "#/admin") return { view: "admin" };
   if (hash === "#/export") return { view: "export" };
   if (hash === "#/teams") return { view: "teams" };
+  if (hash === "#/feedback") return { view: "feedback" };
   return { view: "start" };
 }
 
@@ -1847,6 +1902,15 @@ async function recordLoginEvent() {
 
 async function loadLoginEvents() {
   const { data, error } = await sb.from("login_events").select("user_id, created_at");
+  if (error) return [];
+  return data || [];
+}
+
+async function loadAppFeedback() {
+  const { data, error } = await sb
+    .from("app_feedback")
+    .select("id, user_id, created_at, rating_usability, rating_design, rating_features, rating_performance, comment")
+    .order("created_at", { ascending: false });
   if (error) return [];
   return data || [];
 }
@@ -2704,7 +2768,7 @@ function ideaCard(idea) {
     .filter(Boolean);
   const isChained = idea.parent_idea_id || ideaFollowUpStages(idea).length > 0;
   return `
-    <div class="idea-item" data-id="${idea.id}">
+    <div class="idea-item" data-id="${idea.id}" data-type="idea">
       <div class="idea-title">${idea.catalog_id ? `<span class="badge">🏷 ${escapeHtml(idea.catalog_id)}</span> ` : ""}${escapeHtml(trValue(idea, "quick_note"))}</div>
       <div class="idea-meta">
         <span class="badge status-${idea.status}">${t(`status_${idea.status}`)}</span>
@@ -2729,7 +2793,7 @@ async function renderList() {
         <button class="icon-btn" id="logout-btn">${t("logoutBtn")}</button>
       </div>
     </header>
-    <main>
+    <main class="wide-main">
       ${tabBar("ideas")}
       <div class="card capture-box">
         <label class="field-label" style="margin-top:0;">${t("newIdeaLabel")}</label>
@@ -2985,7 +3049,7 @@ async function renderDetail(id) {
       </div>
       <button class="icon-btn" id="delete-btn">${t("deleteBtn")}</button>
     </header>
-    <main>
+    <main class="wide-main">
       ${
         canWrite
           ? ""
@@ -3334,7 +3398,7 @@ function processCard(proc) {
   const ai = aiPotentialInfo(proc.ai_potential);
   const statusInfo = processStatusInfo(proc.status);
   return `
-    <div class="idea-item" data-id="${proc.id}">
+    <div class="idea-item" data-id="${proc.id}" data-type="process">
       <div class="idea-title">
         <span class="process-status-icon" title="${escapeHtml(statusInfo.label)}" aria-label="${escapeHtml(statusInfo.label)}">${statusInfo.icon}</span>
         ${escapeHtml(trValue(proc, "name"))}
@@ -3344,6 +3408,7 @@ function processCard(proc) {
         <span class="badge">${proc.realized_potential || 0}% ${escapeHtml(t("realizedPotentialLabel"))}</span>
         ${proc.team_id ? `<span class="badge">${escapeHtml(teamName(proc.team_id))}</span>` : ""}
         ${proc.parent ? `<span class="badge">↳ ${escapeHtml(trValue(proc.parent, "name"))}</span>` : ""}
+        ${proc.updated_at ? `<span class="badge" title="${t("lastSavedTitle")}">🕒 ${formatDateTime(proc.updated_at)}</span>` : ""}
       </div>
       ${potentialBarHtml(proc.ai_potential, proc.realized_potential)}
     </div>
@@ -3362,7 +3427,7 @@ async function renderProcessList() {
         <button class="icon-btn" id="logout-btn">${t("logoutBtn")}</button>
       </div>
     </header>
-    <main>
+    <main class="wide-main">
       ${tabBar("processes")}
       <div class="card capture-box">
         <label class="field-label" style="margin-top:0;">${t("newProcessLabel")}</label>
@@ -3910,7 +3975,7 @@ async function renderProcessDetail(id) {
       ${canWrite ? `<button class="icon-btn" id="duplicate-process-btn">${t("duplicateProcessBtn")}</button>` : ""}
       <button class="icon-btn" id="delete-btn">${t("deleteBtn")}</button>
     </header>
-    <main>
+    <main class="wide-main">
       ${
         canWrite
           ? ""
@@ -4216,6 +4281,69 @@ function renderSettings() {
       input.value = "";
       toast(t("passwordChangedMsg"));
     }
+  });
+}
+
+// ---------- View: Feedback ----------
+
+function renderFeedback() {
+  $app.innerHTML = `
+    <header class="topbar">
+      <div class="back-row">
+        <button class="icon-btn" id="back-btn">${t("backBtn")}</button>
+      </div>
+      ${langToggleButton()}${themeToggleButton()}
+    </header>
+    <main>
+      <div class="card">
+        <div class="section-title" style="margin:0 0 10px;">${t("feedbackTitle")}</div>
+        <p style="font-size:13.5px; color:var(--text-dim); margin:0 0 14px; line-height:1.5;">
+          ${t("feedbackDesc")}
+        </p>
+        ${sliderRow("usability", t("feedbackRatingUsability"), 3)}
+        ${sliderRow("design", t("feedbackRatingDesign"), 3)}
+        ${sliderRow("features", t("feedbackRatingFeatures"), 3)}
+        ${sliderRow("performance", t("feedbackRatingPerformance"), 3)}
+        <label class="field-label">${t("feedbackCommentLabel")}</label>
+        <textarea class="field" id="f-feedback-comment" placeholder="${t("feedbackCommentPlaceholder")}"></textarea>
+        <div class="row">
+          <button class="btn-primary" id="send-feedback-btn">${t("sendFeedbackBtn")}</button>
+        </div>
+      </div>
+    </main>
+  `;
+
+  document.getElementById("back-btn").addEventListener("click", () => {
+    window.location.hash = "";
+  });
+
+  bindLangToggle();
+  bindThemeToggle();
+
+  document.querySelectorAll('input[type="range"]').forEach((slider) => {
+    slider.addEventListener("input", () => {
+      slider.nextElementSibling.textContent = slider.value;
+    });
+  });
+
+  document.getElementById("send-feedback-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("send-feedback-btn");
+    btn.disabled = true;
+    const { error } = await sb.from("app_feedback").insert({
+      user_id: currentUser.id,
+      rating_usability: Number(document.querySelector('[data-field="usability"]').value),
+      rating_design: Number(document.querySelector('[data-field="design"]').value),
+      rating_features: Number(document.querySelector('[data-field="features"]').value),
+      rating_performance: Number(document.querySelector('[data-field="performance"]').value),
+      comment: document.getElementById("f-feedback-comment").value.trim(),
+    });
+    btn.disabled = false;
+    if (error) {
+      toast(t("saveErrorPrefix") + error.message);
+      return;
+    }
+    toast(t("feedbackSentMsg"));
+    window.location.hash = "";
   });
 }
 
@@ -4722,8 +4850,8 @@ function accessLevelOptions(selected) {
 }
 
 function registrationMailto(email, password) {
-  const appUrl = "https://davgoos.github.io/Claude/index.html";
-  const guideUrl = "https://davgoos.github.io/Claude/index.html#/guide";
+  const appUrl = "https://davgoos-serviceplan.github.io/Claude/index.html";
+  const guideUrl = "https://davgoos-serviceplan.github.io/Claude/index.html#/guide";
   const body = t("registrationMailBody")
     .replaceAll("{email}", email)
     .replaceAll("{password}", password)
@@ -4831,6 +4959,16 @@ async function renderAdmin() {
     .slice()
     .sort((a, b) => new Date((loginStatsByUser[b.id] || {}).last || 0) - new Date((loginStatsByUser[a.id] || {}).last || 0));
 
+  // App-Feedback: Durchschnitt je Kategorie (nur Kategorien mit Angabe
+  // fließen ein, aktuell aber ohnehin Pflichtfelder) plus Liste der
+  // nicht-leeren Freitext-Kommentare, neueste zuerst.
+  const feedbackRows = await loadAppFeedback();
+  const profileEmailById = {};
+  profilesCache.forEach((p) => (profileEmailById[p.id] = p.email));
+  const feedbackAvgOf = (key) =>
+    feedbackRows.length ? feedbackRows.reduce((sum, r) => sum + r[key], 0) / feedbackRows.length : 0;
+  const feedbackComments = feedbackRows.filter((r) => r.comment && r.comment.trim());
+
   $app.innerHTML = `
     <header class="topbar">
       <div class="back-row">
@@ -4922,6 +5060,44 @@ async function renderAdmin() {
             : `<div class="empty-state">${t("noApprovedForAccessMsg")}</div>`
         }
       </div>
+
+      <div class="section-title" style="margin:24px 4px 8px;">${t("feedbackAdminTitle")}</div>
+      <div class="card" style="margin-bottom:20px;">
+        ${
+          feedbackRows.length
+            ? `
+              ${feedbackAvgRow(t("feedbackRatingUsability"), feedbackAvgOf("rating_usability"))}
+              ${feedbackAvgRow(t("feedbackRatingDesign"), feedbackAvgOf("rating_design"))}
+              ${feedbackAvgRow(t("feedbackRatingFeatures"), feedbackAvgOf("rating_features"))}
+              ${feedbackAvgRow(t("feedbackRatingPerformance"), feedbackAvgOf("rating_performance"))}
+              <p style="font-size:12.5px; color:var(--text-dim); margin:10px 0 0;">${t("feedbackResponseCountMsg").replace("{n}", feedbackRows.length)}</p>
+            `
+            : `<div class="empty-state">${t("emptyFeedback")}</div>`
+        }
+      </div>
+
+      ${
+        feedbackComments.length
+          ? `
+            <div class="section-title" style="margin:0 4px 8px;">${t("feedbackCommentsTitle")}</div>
+            <div class="idea-list" style="margin-bottom:20px;">
+              ${feedbackComments
+                .map(
+                  (r) => `
+                <div class="idea-item">
+                  <div class="idea-title">${escapeHtml(r.comment)}</div>
+                  <div class="idea-meta">
+                    <span class="badge">👤 ${escapeHtml(profileEmailById[r.user_id] || "?")}</span>
+                    <span class="badge">🕒 ${formatDateTime(r.created_at)}</span>
+                  </div>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+          `
+          : ""
+      }
 
       <div class="section-title" style="margin:24px 4px 8px;">${t("kostenstellenTitle")}</div>
       <div class="card">
@@ -5857,7 +6033,7 @@ async function renderDashboard() {
         <button class="icon-btn" id="logout-btn">${t("logoutBtn")}</button>
       </div>
     </header>
-    <main>
+    <main class="wide-main">
       ${tabBar("dashboard")}
       <div id="dash-body">
         <div class="empty-state">${t("loadingIdeas")}</div>
@@ -5877,11 +6053,154 @@ async function renderDashboard() {
 
 // ---------- Start (Startseite/Cockpit) ----------
 
-function greetingText() {
+// Eine von vier Tageszeiten - bestimmt sowohl Begrüßungstext/-icon als auch
+// Verlauf + Himmelsgrafik des Hero-Headers (siehe heroSkyIllustration).
+// Bewusst unabhängig vom Hell-/Dunkelmodus-Schalter: der regelt nur den Rest
+// der App (Karten, Text, Flächen), die Himmelsfarbe folgt allein der Uhrzeit.
+function dayPart() {
   const h = new Date().getHours();
-  if (h < 12) return t("greetingMorning");
-  if (h < 18) return t("greetingAfternoon");
-  return t("greetingEvening");
+  if (h >= 22 || h < 5) return "night";
+  if (h < 10) return "morning";
+  if (h < 17) return "day";
+  return "evening";
+}
+
+function greetingText() {
+  return { morning: t("greetingMorning"), day: t("greetingAfternoon"), evening: t("greetingEvening"), night: t("greetingNight") }[
+    dayPart()
+  ];
+}
+
+// Icon + Glow-Farbe je Tageszeit, passend zur Begrüßung (siehe greetingText).
+function greetingIcon() {
+  return {
+    morning: { emoji: "🌅", cls: "icon-morning" },
+    day: { emoji: "☀️", cls: "icon-day" },
+    evening: { emoji: "🌇", cls: "icon-evening" },
+    night: { emoji: "🌙", cls: "icon-night" },
+  }[dayPart()];
+}
+
+// Breite Hintergrundgrafik für den Start-Header: Sonne/Mond/Wolken/Sterne
+// über derselben stilisierten Bürozeile am Horizont, je Tageszeit anders
+// (siehe dayPart). viewBox bewusst sehr breit (400x200) und zentriert auf
+// die Sonne/den Mond, damit "preserveAspectRatio=slice" auf sehr schmalen
+// (Handy) wie sehr breiten (Desktop) Headern nur die Ränder abschneidet,
+// statt das Hauptmotiv zu verlieren.
+function heroSkylineRects() {
+  const heights = [26, 44, 18, 34, 16, 30, 20, 40, 16, 28, 22, 38, 16, 32, 20, 42, 16, 26, 22, 34];
+  const w = 400 / heights.length;
+  return heights
+    .map((h, i) => {
+      const bw = w * 0.7;
+      const x = i * w + w * 0.15;
+      return `<rect x="${x.toFixed(1)}" y="${200 - h}" width="${bw.toFixed(1)}" height="${h}"/>`;
+    })
+    .join("");
+}
+
+function heroWindowRects(positions) {
+  return positions.map(([x, y]) => `<rect x="${x}" y="${y}" width="3" height="4" fill="#ffd77a" fill-opacity="0.85"/>`).join("");
+}
+
+function heroSkyIllustration(part) {
+  const skyline = (color, opacity) => `<g fill="${color}" fill-opacity="${opacity}">${heroSkylineRects()}</g>`;
+  const sun = (cx, cy, r, glow) => `
+    <circle cx="${cx}" cy="${cy}" r="${r + 14}" fill="${glow}" fill-opacity="0.3" class="hero-sky-bob"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffe19b" class="hero-sky-bob"/>
+  `;
+  const rays = (cx, cy, r, count, len) =>
+    `<g stroke="#fff4de" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round" class="hero-sky-bob">${Array.from(
+      { length: count },
+      (_, i) => {
+        const a = (Math.PI * 2 * i) / count;
+        const x1 = cx + Math.cos(a) * (r + 6);
+        const y1 = cy + Math.sin(a) * (r + 6);
+        const x2 = cx + Math.cos(a) * (r + 6 + len);
+        const y2 = cy + Math.sin(a) * (r + 6 + len);
+        return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+      }
+    ).join("")}</g>`;
+  const cloud = (cx, cy, rx, ry, opacity) =>
+    `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" fill-opacity="${opacity}" class="hero-sky-drift"/>`;
+  const stars = (positions) =>
+    `<g fill="#e7ebff">${positions
+      .map(([x, y, r], i) => `<circle class="hero-sky-twinkle" cx="${x}" cy="${y}" r="${r}" style="animation-delay:${(i % 5) * 0.5}s"/>`)
+      .join("")}</g>`;
+
+  if (part === "morning") {
+    return `
+      <line x1="0" y1="176" x2="400" y2="176" stroke="#fff" stroke-opacity="0.16"/>
+      ${rays(250, 148, 30, 6, 16)}
+      ${sun(250, 148, 30, "#ffb46b")}
+      ${cloud(70, 120, 46, 13, 0.22)}
+      ${cloud(130, 140, 34, 10, 0.16)}
+      ${skyline("#4a2c22", 0.5)}
+    `;
+  }
+  if (part === "day") {
+    return `
+      <line x1="0" y1="176" x2="400" y2="176" stroke="#fff" stroke-opacity="0.2"/>
+      ${rays(250, 112, 24, 8, 16)}
+      <circle cx="250" cy="112" r="24" fill="#fff6d8" class="hero-sky-bob"/>
+      ${cloud(70, 108, 42, 14, 0.85)}
+      ${cloud(130, 128, 30, 11, 0.7)}
+      ${cloud(330, 140, 44, 14, 0.6)}
+      ${skyline("#0d3b63", 0.28)}
+    `;
+  }
+  if (part === "evening") {
+    return `
+      <line x1="0" y1="176" x2="400" y2="176" stroke="#fff" stroke-opacity="0.14"/>
+      ${sun(250, 176, 40, "#ff7a59")}
+      <path d="M60 90 q10 -8 20 0 q10 -8 20 0" fill="none" stroke="#2a1240" stroke-opacity="0.45" stroke-width="2" class="hero-sky-drift"/>
+      <path d="M300 70 q10 -8 20 0 q10 -8 20 0" fill="none" stroke="#2a1240" stroke-opacity="0.35" stroke-width="2" class="hero-sky-drift"/>
+      ${skyline("#241033", 0.65)}
+      ${heroWindowRects([
+        [36, 140],
+        [96, 152],
+        [151, 146],
+        [230, 154],
+        [286, 142],
+        [345, 150],
+      ])}
+    `;
+  }
+  return `
+    <line x1="0" y1="176" x2="400" y2="176" stroke="#fff" stroke-opacity="0.08"/>
+    ${stars([
+      [24, 34, 1.6],
+      [66, 58, 1.2],
+      [104, 30, 1.6],
+      [150, 50, 1.2],
+      [190, 28, 1.6],
+      [40, 78, 1.2],
+      [130, 74, 1.6],
+      [16, 96, 1.2],
+      [80, 96, 1.6],
+      [172, 90, 1.2],
+      [286, 40, 1.6],
+      [326, 62, 1.2],
+      [356, 32, 1.6],
+      [366, 84, 1.2],
+      [244, 88, 1.6],
+    ])}
+    <g class="hero-sky-bob">
+      <circle cx="250" cy="112" r="26" fill="#eef1ff"/>
+      <circle cx="261" cy="104" r="24" fill="#0b0f2e"/>
+    </g>
+    ${skyline("#05071a", 1)}
+    ${heroWindowRects([
+      [20, 142],
+      [56, 130],
+      [96, 152],
+      [151, 146],
+      [210, 138],
+      [286, 142],
+      [326, 154],
+      [366, 150],
+    ])}
+  `;
 }
 
 function longDateText() {
@@ -5963,44 +6282,56 @@ async function renderStart() {
 
   const openIdeas = ideasCache.filter((i) => i.status !== "done" && i.status !== "discarded").length;
   const inProgress = ideasCache.filter((i) => i.status === "in_progress").length;
-  const recent = [...ideasCache].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+  const recent = [
+    ...ideasCache.map((idea) => ({ kind: "idea", item: idea })),
+    ...processesCache.map((proc) => ({ kind: "process", item: proc })),
+  ]
+    .sort((a, b) => new Date(b.item.updated_at) - new Date(a.item.updated_at))
+    .slice(0, 3);
   const avgAi = aiPotentialAverage();
   const avgRealized = realizedPotentialAverage();
   const isAdmin = currentProfile && currentProfile.is_admin;
 
   $app.innerHTML = `
-    <header class="topbar hero">
-      <div class="hero-top">
-        <div class="brand-lockup">
-          <div class="hoc-chip"><img src="icons/hoc-mark.png" alt="House of Communication" /></div>
-          <div class="brand-div"></div>
-          ${appLogoMark(true)}
-          <span class="app-name">${escapeHtml(t("appName"))}</span>
-        </div>
-        <div class="hero-actions">
-          ${langToggleButton()}${themeToggleButton()}
-          <button class="icon-btn" id="logout-btn">${t("logoutBtn")}</button>
-        </div>
-      </div>
-
-      <div class="greet-row">
-        <div class="greet">${greetingText()}<span class="wave">👋</span></div>
-        <div class="sub">${longDateText()}</div>
-      </div>
-
-      <div class="ring-row">
-        <div class="ring-wrap">
-          ${startRingSvg(avgAi / 5)}
-          <div>
-            <div class="ring-value">${avgAi.toFixed(1).replace(".", currentLang === "en" ? "." : ",")} / 5</div>
-            <div class="ring-label">${t("aiPotentialAvgLabel")}</div>
+    <header class="topbar hero" data-daypart="${dayPart()}">
+      <svg class="hero-sky" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        ${heroSkyIllustration(dayPart())}
+      </svg>
+      <div class="hero-inner">
+        <div class="hero-top">
+          <div class="brand-lockup">
+            <div class="hoc-chip"><img src="icons/hoc-mark.png" alt="House of Communication" /></div>
+            <div class="brand-div"></div>
+            ${appLogoMark(true)}
+            <span class="app-name">${escapeHtml(t("appName"))}</span>
           </div>
         </div>
-        <div class="ring-wrap">
-          ${startRingSvg(avgRealized / 100)}
-          <div>
-            <div class="ring-value">${Math.round(avgRealized)}%</div>
-            <div class="ring-label">${t("realizedPotentialAvgLabel")}</div>
+
+        <div class="greet-row">
+          <div class="greet-line">
+            <div class="greet">${greetingText()}<span class="greet-icon ${greetingIcon().cls}">${greetingIcon().emoji}</span></div>
+            <div class="hero-actions">
+              <div class="hero-actions-group">${langToggleButton()}${themeToggleButton()}</div>
+              <button class="icon-btn" id="logout-btn">${t("logoutBtn")}</button>
+            </div>
+          </div>
+          <div class="sub">${longDateText()}</div>
+        </div>
+
+        <div class="ring-row">
+          <div class="ring-wrap">
+            ${startRingSvg(avgAi / 5)}
+            <div>
+              <div class="ring-value">${avgAi.toFixed(1).replace(".", currentLang === "en" ? "." : ",")} / 5</div>
+              <div class="ring-label">${t("aiPotentialAvgLabel")}</div>
+            </div>
+          </div>
+          <div class="ring-wrap">
+            ${startRingSvg(avgRealized / 100)}
+            <div>
+              <div class="ring-value">${Math.round(avgRealized)}%</div>
+              <div class="ring-label">${t("realizedPotentialAvgLabel")}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -6012,7 +6343,7 @@ async function renderStart() {
       ${startStatTile(processesCache.length, t("statProcessesLabel"), 0.19)}
     </div>
 
-    <main>
+    <main class="wide-main">
       ${tabBar("start")}
 
       <div class="section-title">${t("quickAccessTitle")}</div>
@@ -6033,11 +6364,16 @@ async function renderStart() {
             : ""
         }
         <div class="tile fade-up" data-hash="#/settings" style="animation-delay:.62s"><span class="ic">⚙️</span><span class="lbl">${t("utilSettingsLabel")}</span></div>
+        <div class="tile fade-up" data-hash="#/feedback" style="animation-delay:.66s"><span class="ic">⭐</span><span class="lbl">${t("utilFeedbackLabel")}</span></div>
       </div>
 
       <div class="section-title" style="margin-top:20px;">${t("recentlyEditedTitle")}</div>
       <div id="start-recent">
-        ${recent.length ? recent.map((idea) => ideaCard(idea)).join("") : `<div class="empty-state">${t("emptyRecentlyEdited")}</div>`}
+        ${
+          recent.length
+            ? recent.map((r) => (r.kind === "process" ? processCard(r.item) : ideaCard(r.item))).join("")
+            : `<div class="empty-state">${t("emptyRecentlyEdited")}</div>`
+        }
       </div>
 
       <div class="brand-footer">
@@ -6065,7 +6401,7 @@ async function renderStart() {
   });
   document.querySelectorAll("#start-recent .idea-item").forEach((el) => {
     el.addEventListener("click", () => {
-      window.location.hash = `#/idea/${el.dataset.id}`;
+      window.location.hash = el.dataset.type === "process" ? `#/process/${el.dataset.id}` : `#/idea/${el.dataset.id}`;
     });
   });
 
@@ -6118,6 +6454,8 @@ async function render() {
     await renderExportSync();
   } else if (route.view === "teams") {
     await renderTeamsManagement();
+  } else if (route.view === "feedback") {
+    renderFeedback();
   } else if (route.view === "idea-list") {
     await renderList();
   } else {

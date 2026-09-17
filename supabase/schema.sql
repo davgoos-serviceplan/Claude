@@ -877,3 +877,34 @@ drop policy if exists "Login events: admin select all" on login_events;
 create policy "Login events: admin select all"
   on login_events for select
   using (is_admin_user());
+
+-- ============================================================
+-- App-Feedback (Kachel "Feedback" unter Verwaltung & mehr): freigegebene
+-- Personen bewerten die App per Schieberegler (1-5) in mehreren Kategorien
+-- und können optional Freitext hinterlassen. Wie bei login_events oben darf
+-- jede Person nur ihre eigene Zeile anlegen; lesen dürfen nur Admins.
+-- ============================================================
+create table if not exists app_feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  rating_usability smallint not null check (rating_usability between 1 and 5),
+  rating_design smallint not null check (rating_design between 1 and 5),
+  rating_features smallint not null check (rating_features between 1 and 5),
+  rating_performance smallint not null check (rating_performance between 1 and 5),
+  comment text not null default ''
+);
+
+create index if not exists app_feedback_created_at_idx on app_feedback (created_at desc);
+
+alter table app_feedback enable row level security;
+
+drop policy if exists "App feedback: insert own" on app_feedback;
+create policy "App feedback: insert own"
+  on app_feedback for insert
+  with check (is_approved_user() and user_id = auth.uid());
+
+drop policy if exists "App feedback: admin select all" on app_feedback;
+create policy "App feedback: admin select all"
+  on app_feedback for select
+  using (is_admin_user());
