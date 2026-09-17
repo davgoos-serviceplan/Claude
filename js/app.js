@@ -4850,8 +4850,8 @@ function accessLevelOptions(selected) {
 }
 
 function registrationMailto(email, password) {
-  const appUrl = "https://davgoos.github.io/Claude/index.html";
-  const guideUrl = "https://davgoos.github.io/Claude/index.html#/guide";
+  const appUrl = "https://davgoos-serviceplan.github.io/Claude/index.html";
+  const guideUrl = "https://davgoos-serviceplan.github.io/Claude/index.html#/guide";
   const body = t("registrationMailBody")
     .replaceAll("{email}", email)
     .replaceAll("{password}", password)
