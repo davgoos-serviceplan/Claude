@@ -4637,7 +4637,7 @@ function baseExportCols(idea) {
   const cols = new Array(46).fill("");
   cols[1] = "Shared Service"; // Brand
   cols[2] = "Group Controlling"; // Agency
-  cols[3] = idea.tags || ""; // Bucket NEW
+  cols[3] = idea.owner_name || ""; // Bucket NEW (Usecase-Geber statt Tags)
   cols[4] = idea.quick_note || ""; // Use Case Name
   cols[6] = idea.problem || ""; // Problem Description
   cols[8] = idea.goal || ""; // Ziel
