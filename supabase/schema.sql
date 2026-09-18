@@ -928,7 +928,7 @@ begin
   new.updated_by = coalesce((select email from auth.users where id = auth.uid()), '');
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public;
 
 drop trigger if exists ideas_set_updated_by on ideas;
 create trigger ideas_set_updated_by
