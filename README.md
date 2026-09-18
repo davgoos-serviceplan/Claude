@@ -517,10 +517,13 @@ Gedächtnisstütze, die mit der Idee gespeichert wird.
   "Systeme" ist bewusst ein eigenes Feld, getrennt von "KI-Rolle"/den Tools
   weiter oben, weil es in der Collection eine eigene Spalte zwischen
   "KI Lösung" und "Input" ist. Die vier ganz rechten Spalten der Collection
-  (Änderungsstatus, Geändert von, Änderungsdatum, Was wurde geändert) haben
-  bewusst kein eigenes Feld in der App – sie werden in der Collection
-  praktisch nie gepflegt und beim Update-Export (siehe unten) automatisch
-  erzeugt statt gespeichert.
+  (Änderungsstatus, Geändert von, Änderungsdatum, Was wurde geändert) werden
+  beim Update-Export (siehe unten) automatisch erzeugt: Änderungsstatus und
+  Änderungsdatum ergeben sich aus der App-Logik selbst, Geändert von wird
+  per Datenbank-Trigger aus der zuletzt speichernden Person gesetzt, und
+  Was wurde geändert kommt aus dem gleichnamigen Feld im Ausklappbereich
+  "Änderungsinfo für Excel-Sync" der Idee (dort auch alle vier Werte
+  einsehbar, bevor exportiert wird).
 - **Usecase-Geber / Ansprechpartner**: Direkt im Hauptbereich jeder Idee
   lässt sich der Name der verantwortlichen Person hinterlegen, damit klar
   ist, wer bei Rückfragen anzusprechen ist.
@@ -548,9 +551,11 @@ Gedächtnisstütze, die mit der Idee gespeichert wird.
   Excel-Zeile mit derselben Spaltenreihenfolge wie beim normalen Export,
   aber mit ausgefüllter ID Nr (zur Kontrolle vor dem Überschreiben) und
   automatisch befüllten Änderungsspalten (Änderungsstatus "geändert",
-  Geändert von = eigene E-Mail, Änderungsdatum = heute). Auch hier reines
-  Copy & Paste: die Zeile direkt **auf die bestehende Zeile mit dieser
-  ID Nr** einfügen (Strg+V), nicht als neue Zeile darunter.
+  Geändert von = wer die Idee zuletzt in der App gespeichert hat,
+  Änderungsdatum = das Speicherdatum dieser Änderung, Was wurde geändert =
+  Freitext aus dem Feld "Was wurde geändert?" bei der Idee). Auch hier
+  reines Copy & Paste: die Zeile direkt **auf die bestehende Zeile mit
+  dieser ID Nr** einfügen (Strg+V), nicht als neue Zeile darunter.
 - **Onboarding-Anleitung als eigene In-App-Ansicht**: Die Kachel
   "📋 Anleitung" unter "Verwaltung & mehr" auf der Startseite öffnet die
   Route `#/guide` – eine für Kolleg:innen gedachte Erklärseite (was die App

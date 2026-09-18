@@ -908,3 +908,30 @@ drop policy if exists "App feedback: admin select all" on app_feedback;
 create policy "App feedback: admin select all"
   on app_feedback for select
   using (is_admin_user());
+
+-- ============================================================
+-- Änderungsprotokoll für den Excel-Sync (Update-Zeile beim Export in die AI
+-- Ambassadors Usecase-Collection, Spalten AR "Geändert von" / AS
+-- "Änderungsdatum" / AT "Was wurde geändert" - siehe buildUpdateRow() in
+-- js/app.js): updated_by wird nicht vom Client gesetzt, sondern per Trigger
+-- serverseitig aus dem eingeloggten Auth-Nutzer befüllt (kann dadurch nicht
+-- versehentlich die exportierende statt die zuletzt speichernde Person
+-- eintragen). change_note ist reiner Freitext, den die Nutzerin/der Nutzer
+-- selbst im Ausklappbereich "Änderungsinfo für Excel-Sync" der Idee pflegt.
+-- ============================================================
+alter table ideas add column if not exists updated_by text not null default '';
+alter table ideas add column if not exists change_note text not null default '';
+
+create or replace function set_ideas_updated_by()
+returns trigger as $$
+begin
+  new.updated_by = coalesce((select email from auth.users where id = auth.uid()), '');
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists ideas_set_updated_by on ideas;
+create trigger ideas_set_updated_by
+  before update on ideas
+  for each row
+  execute function set_ideas_updated_by();

@@ -391,6 +391,17 @@ const I18N = {
     ownerNameLabel: "Usecase-Geber / Ansprechpartner",
     ownerNamePlaceholder: "Name der verantwortlichen Person",
 
+    changeInfoTitle: "Änderungsinfo für Excel-Sync",
+    changeInfoDesc:
+      "Diese Angaben fließen automatisch in die „Update-Zeile (Excel)“ beim Export ein (Spalten AQ–AT der Ambassador-Liste) – relevant, sobald die Idee eine Katalog-ID hat.",
+    changeStatusLabel: "Änderungsstatus (Spalte AQ)",
+    changeStatusValue: "geändert",
+    changedByLabel: "Geändert von (Spalte AR)",
+    changedByEmpty: "Noch nicht gespeichert",
+    changedAtLabel: "Änderungsdatum (Spalte AS)",
+    changeNoteLabel: "Was wurde geändert? (Spalte AT)",
+    changeNotePlaceholder: "Kurze Notiz, was sich seit dem letzten Export geändert hat",
+
     exportTitle: "Neue Ideen für die AI Ambassadors Usecase-Collection kopieren",
     exportIntro:
       "Hier stehen alle Ideen, die noch keine Katalog-ID haben – also noch nicht in der zentralen AI Ambassadors Usecase-Collection stehen. Wichtig: Das ist reines Copy & Paste, hier wird nichts automatisch geschrieben oder synchronisiert. Kopiere eine Idee (oder alle) und füge sie selbst als neue Zeile in die Usecase-Collection ein (am einfachsten mit der Tab-getrennt-Option unten), oder poste den Text stattdessen in den Chat mit Claude, wenn du beim Einordnen Unterstützung möchtest. Trag die dort vergebene Katalog-ID (z.B. GC30) anschließend hier bei der Idee ein, dann verschwindet sie aus dieser Liste und taucht stattdessen unten bei den Aktualisierungen auf.",
@@ -408,7 +419,7 @@ const I18N = {
     updateExportIntro:
       "Hier stehen alle Ideen, die schon eine Katalog-ID haben – also schon einmal in die Usecase-Collection übertragen wurden. Wenn du eine davon in der App weiter gepflegt hast, kannst du hier eine aktuelle Excel-Zeile kopieren und damit die bestehende Zeile mit der passenden ID Nr in der Collection überschreiben (Strg+V direkt auf der vorhandenen Zeile, nicht als neue Zeile einfügen!). Auch hier reines Copy & Paste, nichts läuft automatisch.",
     updateExportFieldsNote:
-      "Die Zeile enthält zusätzlich Änderungsstatus (\"geändert\"), Geändert von (deine E-Mail) und Änderungsdatum (heute) – \"Was wurde geändert\" bleibt leer zum selbst Ausfüllen, das pflegt aktuell niemand in der Liste.",
+      "Die Zeile enthält zusätzlich Änderungsstatus (\"geändert\"), Geändert von (wer die Idee zuletzt in der App gespeichert hat) und Änderungsdatum (das Speicherdatum dieser Änderung) sowie \"Was wurde geändert\" aus dem gleichnamigen Feld im Ausklappbereich \"Änderungsinfo für Excel-Sync\" bei der Idee.",
     updateExportEmpty: "Keine Ideen mit Katalog-ID vorhanden – nichts zu aktualisieren.",
     copyUpdateTsvOneBtn: "📋 Update-Zeile (Excel)",
     copyUpdateTsvAllBtn: "📋 Alle Update-Zeilen",
@@ -966,6 +977,17 @@ const I18N = {
     ownerNameLabel: "Use case owner / contact",
     ownerNamePlaceholder: "Name of the responsible person",
 
+    changeInfoTitle: "Change info for Excel sync",
+    changeInfoDesc:
+      "These values automatically flow into the \"Update row (Excel)\" on export (columns AQ–AT of the Ambassador list) - relevant once the idea has a catalog ID.",
+    changeStatusLabel: "Change status (column AQ)",
+    changeStatusValue: "geändert",
+    changedByLabel: "Changed by (column AR)",
+    changedByEmpty: "Not saved yet",
+    changedAtLabel: "Change date (column AS)",
+    changeNoteLabel: "What changed? (column AT)",
+    changeNotePlaceholder: "Short note on what changed since the last export",
+
     exportTitle: "Copy new ideas into the AI Ambassadors Usecase Collection",
     exportIntro:
       "This lists every idea that doesn't have a catalog ID yet - i.e. isn't in the central AI Ambassadors Usecase Collection yet. Important: this is plain copy & paste, nothing here writes or syncs anything automatically. Copy one idea (or all of them) and paste it yourself as a new row into the Usecase Collection (easiest with the tab-separated option below), or post the text into the chat with Claude instead if you'd like help sorting it out. Enter the catalog ID assigned there (e.g. GC30) back on the idea afterwards, then it disappears from this list and shows up under the updates section below instead.",
@@ -983,7 +1005,7 @@ const I18N = {
     updateExportIntro:
       "This lists every idea that already has a catalog ID - i.e. was already copied into the Usecase Collection before. If you kept editing one of them in the app, copy an up-to-date Excel row here and use it to overwrite the existing row with that ID Nr in the Collection (Ctrl+V directly onto the existing row, not as a new row!). Also plain copy & paste, nothing runs automatically.",
     updateExportFieldsNote:
-      "The row additionally fills in Änderungsstatus (\"geändert\"), Geändert von (your email) and Änderungsdatum (today) - \"Was wurde geändert\" stays blank for you to fill in yourself, nobody currently maintains that column in the list.",
+      "The row additionally fills in Änderungsstatus (\"geändert\"), Geändert von (whoever last saved the idea in the app) and Änderungsdatum (that save's date), plus \"Was wurde geändert\" from the matching field in the idea's \"Change info for Excel sync\" section.",
     updateExportEmpty: "No ideas with a catalog ID yet - nothing to update.",
     copyUpdateTsvOneBtn: "📋 Update row (Excel)",
     copyUpdateTsvAllBtn: "📋 All update rows",
@@ -3149,6 +3171,24 @@ async function renderDetail(id) {
       </div>
 
       <details class="card">
+        <summary style="cursor:pointer; font-size:14px; font-weight:600; color:var(--text);">${t("changeInfoTitle")}</summary>
+        <p style="font-size:13.5px; color:var(--text-dim); margin:10px 0 12px; line-height:1.5;">
+          ${t("changeInfoDesc")}
+        </p>
+        <label class="field-label" style="margin-top:0;">${t("changeStatusLabel")}</label>
+        <input class="field" value="${escapeHtml(t("changeStatusValue"))}" disabled />
+
+        <label class="field-label">${t("changedByLabel")}</label>
+        <input class="field" value="${escapeHtml(idea.updated_by || t("changedByEmpty"))}" disabled />
+
+        <label class="field-label">${t("changedAtLabel")}</label>
+        <input class="field" value="${escapeHtml(formatDateOnly(idea.updated_at))}" disabled />
+
+        <label class="field-label">${t("changeNoteLabel")}</label>
+        <textarea class="field" id="f-change-note" placeholder="${t("changeNotePlaceholder")}">${escapeHtml(idea.change_note || "")}</textarea>
+      </details>
+
+      <details class="card">
         <summary style="cursor:pointer; font-size:14px; font-weight:600; color:var(--text);">${t("aiSupportTitle")}</summary>
         <p style="font-size:13.5px; color:var(--text-dim); margin:10px 0 12px; line-height:1.5;">
           ${t("aiSupportDesc")}
@@ -3343,6 +3383,7 @@ async function renderDetail(id) {
       catalog_id: document.getElementById("f-catalog-id").value.trim() || null,
       owner_name: document.getElementById("f-owner-name").value.trim(),
       ai_plan_notes: document.getElementById("f-ai-plan-notes").value.trim(),
+      change_note: document.getElementById("f-change-note").value.trim(),
     };
     // Felder, die aktuell die (vom Admin gepflegte) Übersetzung anzeigen,
     // werden nicht mitgespeichert - sonst würde die englische Anzeige das
@@ -4674,15 +4715,16 @@ function buildUpdateRow(idea) {
   // Update-Zeile für einen bereits synchronisierten Case (hat schon eine
   // Katalog-ID): anders als bei buildExportRow wird ID Nr mitgeschrieben
   // (zur Kontrolle vor dem Überschreiben der bestehenden Zeile), und die
-  // vier rechten Änderungsspalten werden zur Laufzeit befüllt - "Was wurde
-  // geändert" bleibt bewusst leer (siehe Kommentar in supabase/schema.sql,
-  // die Spalte wird in der Liste ohnehin von niemandem gepflegt).
+  // vier rechten Änderungsspalten werden befüllt - "Geändert von" kommt aus
+  // idea.updated_by (per DB-Trigger bei jedem Speichern gesetzt, siehe
+  // supabase/schema.sql), "Was wurde geändert" aus dem gleichnamigen,
+  // manuell gepflegten Feld der Idee (change_note).
   const cols = baseExportCols(idea);
   cols[0] = idea.catalog_id || ""; // ID Nr
   cols[42] = "geändert"; // Änderungsstatus
-  cols[43] = (currentUser && currentUser.email) || ""; // Geändert von
+  cols[43] = idea.updated_by || ""; // Geändert von (zuletzt speichernde Person, per DB-Trigger gesetzt)
   cols[44] = formatDateOnly(idea.updated_at); // Änderungsdatum
-  cols[45] = ""; // Was wurde geändert
+  cols[45] = idea.change_note || ""; // Was wurde geändert
   return cols.map(tsvField).join("\t");
 }
 
